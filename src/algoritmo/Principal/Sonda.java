@@ -1,19 +1,20 @@
 package algoritmo.Principal;
 
 public class Sonda {
-	private int inicialX, inicialY;
+	//private int inicialX, inicialY;
 	private String direcaoInicial;
 	
-	private int atualX, atualY;
+	//private int atualX, atualY;
 	private String direcaoAtual;
+	
+	private Posicao posSonda;
 	
 	private String comando;
 	
 	
 	public Sonda(int x, int y, String direcao) {
-		this.inicialX = x;
-		this.inicialY = y;
 		
+		this.posSonda = new Posicao(x, y);
 		this.direcaoInicial = direcao;
 	}
 	
@@ -24,12 +25,12 @@ public class Sonda {
 		return this.comando;
 	}
 	
-	public int getAtualX() {
-		return this.atualX;
+	public int getPosX() {
+		return this.posSonda.getX();
 	}
 	
-	public int getAtualY() {
-		return this.atualY;
+	public int getPosY() {
+		return this.posSonda.getY();
 	}
 	
 	public String getDirecaoAtual() {
@@ -37,72 +38,103 @@ public class Sonda {
 	}
 
 
-	public void executaComando (int limitePlanaltoX ,int limitePlanaltoY ) {
-		int contadorX = this.inicialX;
-    	int contadorY = this.inicialY;
+	public boolean executaComando (Planalto planalto) {
+		int contadorX = this.posSonda.getX();
+    	int contadorY = this.posSonda.getY();
     	
     	String direcao = this.direcaoInicial;
     	
-    	for(int j = 0; j < this.getComando().length(); j++) {
-    		char var = this.getComando().charAt(j);
+    	
+    	boolean caminhoBloqueado = false;
+    	int indiceComandoAtual = 0;
+    	
+    	while(!caminhoBloqueado && indiceComandoAtual < this.getComando().length()) {
+    		//System.out.printf("%s/%s\n",indiceComandoAtual,this.comando.length());
+    		char comandoAtual = this.getComando().charAt(indiceComandoAtual);
     		
-    		if(var == 'M') {
-    			switch(direcao) {                             
-					case "N":
-						if(contadorY < limitePlanaltoY) //limitadores parar nao permitir a sonda sair do planalto planejado.
-							contadorY++;
-						break;
-					case "W":
-						if(contadorX > 0)				//limitadores parar nao permitir a sonda sair do planalto planejado.
-							contadorX--;
-						break;
-					case "E":
-						if(contadorX < limitePlanaltoX) //limitadores parar nao permitir a sonda sair do planalto planejado.
-							contadorX++;
-						break;
-					case "S":
-						if(contadorY > 0)				//limitadores parar nao permitir a sonda sair do planalto planejado.
-							contadorY--;
-						break;
+    		switch(comandoAtual) {
+    			case 'M': 
+    				switch(direcao) {
+    					case "N":
+    						if(contadorY < planalto.getLimiteY()) {
+    							if(planalto.posicaoLivre(contadorX, contadorY + 1)) {
+    								contadorY++;   								
+    							}
+    							else {
+    								caminhoBloqueado = true;
+    							}
+    						}
+    						break;
+    					case "E":
+    						if(contadorX < planalto.getLimiteX()) {
+    							if(planalto.posicaoLivre(contadorX + 1, contadorY)) {
+    								contadorX++;				
+    							}else {
+    								caminhoBloqueado = true;
+    							}
+    						}
+    						break;
+    					case "W":
+    						if(contadorX > 0) {
+    							if(planalto.posicaoLivre(contadorX - 1, contadorY)) {
+    								contadorX--;
+    							}else {
+    								caminhoBloqueado = true;
+    							}
+    						}
+    						break;
+    					case "S":
+    						if(contadorY > 0) {
+    							if(planalto.posicaoLivre(contadorX, contadorY - 1)) {
+    								contadorY--;
+    							}else {
+    								caminhoBloqueado = true;
+    							}
+    						}
+    						break;
+    				}
+    				break;
+    			case 'L': 
+    				switch(direcao) {
+    					case "N":
+    						direcao = "W";
+    						break;
+    					case "W":
+    						direcao = "S";
+    						break;
+    					case "S":
+    						direcao = "E";
+    						break;
+    					case "E":
+    						direcao = "N";
+    						break;
+    				}
+    				break;
+    			case 'R': 
+	    				switch(direcao) {
+		    			case "N":
+		    				direcao = "E";
+							break;
+						case "E":
+							direcao = "S";
+							break;
+						case "S":
+							direcao = "W";
+							break;
+						case "W":
+							direcao = "N";
+							break;
     			}
+    			break;
     		}
-    		if(var == 'L') {
-    			switch(direcao) {
-	    			case "N":
-	    				direcao = "W";
-						break;
-					case "W":
-						direcao = "S";
-						break;
-					case "S":
-						direcao = "E";
-						break;
-					case "E":
-						direcao = "N";
-						break;
-    			}
-    		}
-    		if(var == 'R') {
-    			switch(direcao) {
-	    			case "N":
-	    				direcao = "E";
-						break;
-					case "E":
-						direcao = "S";
-						break;
-					case "S":
-						direcao = "W";
-						break;
-					case "W":
-						direcao = "N";
-						break;
-    			}
-    		}
-    		
+    		indiceComandoAtual++;
     	}
-    	this.atualX = contadorX;
-    	this.atualY = contadorY;
+    	
+    	this.posSonda.setX(contadorX);
+    	this.posSonda.setY(contadorY);
     	this.direcaoAtual = direcao;
+    	
+    	return caminhoBloqueado;
 	}
 	
 	
